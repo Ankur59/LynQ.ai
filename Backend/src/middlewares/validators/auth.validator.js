@@ -7,6 +7,7 @@ import { ApiError } from "../../utils/ApiError.js";
 // ─────────────────────────────────────────────────────────
 export const validate = (req, res, next) => {
   try {
+    console.log("here")
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -66,11 +67,6 @@ export const loginValidator = [
     .trim()
     .isEmail().withMessage("Please provide a valid email address")
     .normalizeEmail(),
-
-  body("username")
-    .optional({ checkFalsy: true })
-    .trim()
-    .isLength({ min: 3 }).withMessage("Username must be at least 3 characters"),
 
   // Custom: require at least one of email or username
   body("email").custom((value, { req }) => {

@@ -73,12 +73,12 @@ const handleRegister = asyncHandler(async (req, res) => {
 // @access  Publicsuccessfully
 // ─────────────────────────────────────────────────────────
 const handleLogin = asyncHandler(async (req, res) => {
-  const { email, username, password } = req.body;
-
+  const { email, password } = req.body;
+  console.log(email, password)
   // Find user by email or username
   const user = await User.findOne({
-    $or: [{ email }, { username }],
-  });
+    email,
+  }).select("password");
 
   if (!user) {
     throw new ApiError(404, "User not found");
