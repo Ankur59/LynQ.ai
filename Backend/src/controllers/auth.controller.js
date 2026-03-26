@@ -64,7 +64,7 @@ const handleRegister = asyncHandler(async (req, res) => {
 
   return res
     .status(201)
-    .json(new ApiResponse(201, "", "User created successfully"));
+    .json(new ApiResponse(201, "", "check your inbox to verify email"));
 });
 
 // ─────────────────────────────────────────────────────────
@@ -81,13 +81,16 @@ const handleLogin = asyncHandler(async (req, res) => {
   }).select("password");
 
   if (!user) {
-    throw new ApiError(404, "User not found");
+    throw new ApiError(404, "Invalid credentials");
   }
 
   if (user.isBanned) {
     throw new ApiError(403, "Your account has been suspended contact administrator");
   }
 
+  if (user.isVerified === false) {
+    throw new ApiError(400, "Email not verified")
+  }
   // Verify password
   const isPasswordValid = await user.isPasswordCorrect(password);
 
@@ -120,7 +123,7 @@ const handleLogin = asyncHandler(async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     })
     .json(
-      new ApiResponse(200, { user: loggedInUser, accessToken }, "Logged in successfully")
+      new ApiResponse(200, { user: { id: loggedInUser._id, email: loggedInUser.email, username: loggedInUser.userName, role: loggedInUser.role }, accessToken }, "Logged in successfully")
     );
 });
 
@@ -157,8 +160,6 @@ const handleVerify = asyncHandler(async (req, res) => {
   if (!token) {
     throw new ApiError(400, "Token in required")
   }
-
-
 
   const hashedToken = crypto
     .createHash("sha256")

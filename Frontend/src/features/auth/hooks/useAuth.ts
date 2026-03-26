@@ -2,7 +2,13 @@ import { useDispatch } from "react-redux";
 import { login, register } from "../service/auth.api";
 import type { UserData } from "../auth.types";
 import { AxiosError } from "axios";
-import { setError, setloading, setUser } from "../auth.slice";
+import {
+  setError,
+  setIsAutheticated,
+  setloading,
+  setRole,
+  setUser,
+} from "../auth.slice";
 
 const useAuth = () => {
   const dispatch = useDispatch();
@@ -43,9 +49,16 @@ const useAuth = () => {
     try {
       // console.log(email, password);
       dispatch(setloading(true));
+
       const response = await login({ email, password });
+
       console.log(response);
-      dispatch(setUser(response.user));
+
+      dispatch(setUser(response.data.user));
+      dispatch(setRole(response.data.user.role));
+      console.log("this is role", response.data.user.role);
+      dispatch(setIsAutheticated(true));
+
       return true;
     } catch (error) {
       if (error instanceof AxiosError) {
@@ -54,8 +67,7 @@ const useAuth = () => {
             error.response?.data.message || "Got some error while logging in!",
           ),
         );
-        console.log(error,"jj");
-        console.log(import.meta.env.VITE_BACKEND_URL);
+
         return false;
       }
       return false;

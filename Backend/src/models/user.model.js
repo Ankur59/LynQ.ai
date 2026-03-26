@@ -60,7 +60,7 @@ const userSchema = new Schema(
 // ─────────────────────────────────────────────
 userSchema.pre("save", async function () {
   // Only hash if password_hash field is new or modified
-  if (!this.isModified("password")) return ;
+  if (!this.isModified("password")) return;
 
   this.password = await bcrypt.hash(this.password, 10);
 });
