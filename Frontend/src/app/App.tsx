@@ -3,6 +3,7 @@ import Login from "../features/auth/pages/Login";
 import ProtectRoutes from "../features/auth/components/login/ProtectRoutes";
 import PersitsLogin from "../features/auth/components/login/persitsLogin";
 import UnauthenticatedRoute from "../features/auth/components/login/UnauthenticatedRoute";
+import Dashboard from "../features/chat/pages/Dashboard";
 
 function App() {
   return (
@@ -14,7 +15,7 @@ function App() {
       {/* Authenticated routes state from here */}
       <Route element={<PersitsLogin />}>
         <Route element={<ProtectRoutes roles={["user"]} />}>
-          <Route path="/chat" element={<div>this is user only route</div>} />
+          <Route path="/chat" element={<Dashboard />} />
         </Route>
       </Route>
     </Routes>
