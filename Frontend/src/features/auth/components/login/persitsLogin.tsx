@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import useRefresh from "../../hooks/useRefresh";
 import { AxiosError } from "axios";
@@ -6,12 +6,17 @@ import { Outlet } from "react-router-dom";
 
 const PersitsLogin = () => {
   const { loading, isAuthenticated } = useSelector((state: any) => state.auth);
-  const { refresh } = useRefresh();
+
+  const isCalledRef = useRef(false); 
+  const refresh = useRefresh();
 
   useEffect(() => {
     const validateUser = async () => {
       try {
-        refresh();
+        if (!isCalledRef.current) {
+          isCalledRef.current = true;
+          await refresh();
+        }
       } catch (error) {
         if (error instanceof AxiosError) {
           console.log(error);
@@ -19,7 +24,7 @@ const PersitsLogin = () => {
       }
     };
 
-    if (!isAuthenticated) {
+    if (!isAuthenticated && !isCalledRef.current) {
       validateUser();
     }
   }, [isAuthenticated, refresh]);

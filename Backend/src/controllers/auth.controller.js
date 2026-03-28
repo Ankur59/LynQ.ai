@@ -3,8 +3,21 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import crypto from "crypto";
+import jwt from "jsonwebtoken";
 import { sendEmail, verificatioMailContent } from "../utils/mailgen.js";
 
+
+
+
+
+
+
+const cookieOptions = {
+  httpOnly: true,
+  // secure: process.env.NODE_ENV === "production",
+  sameSite: "none",
+  secure: true
+};
 // ─────────────────────────────────────────────────────────
 // HELPER: Generate access + refresh tokens and save to DB
 // ─────────────────────────────────────────────────────────
@@ -53,9 +66,6 @@ const handleRegister = asyncHandler(async (req, res) => {
   const verificationToken = user.generateVerificationToken();
   await user.save({ validateBeforeSave: false });
 
-
-  console.log("this is verification token", verificationToken)
-
   await sendEmail({
     email: user.email,
     subject: "Please verify your email",
@@ -74,7 +84,7 @@ const handleRegister = asyncHandler(async (req, res) => {
 // ─────────────────────────────────────────────────────────
 const handleLogin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  console.log(email, password)
+  // console.log(email, password)
   // Find user by email or username
   const user = await User.findOne({
     email,
@@ -108,22 +118,23 @@ const handleLogin = asyncHandler(async (req, res) => {
   // Cookie options
   const cookieOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    // secure: process.env.NODE_ENV === "production",
     sameSite: "none",
+    secure: true
   };
 
   return res
     .status(200)
     .cookie("accessToken", accessToken, {
       ...cookieOptions,
-      maxAge: 15 * 60 * 1000, // 15 minutes
+      maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
     })
     .cookie("refreshToken", refreshToken, {
       ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     })
     .json(
-      new ApiResponse(200, { user: { id: loggedInUser._id, email: loggedInUser.email, username: loggedInUser.userName, role: loggedInUser.role }, accessToken }, "Logged in successfully")
+      new ApiResponse(200, { user: { id: loggedInUser._id, email: loggedInUser.email, username: loggedInUser.userName, role: loggedInUser.role } }, "Logged in successfully")
     );
 });
 
@@ -194,4 +205,41 @@ const handleVerify = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, "", "Email verified successfully"))
 })
 
-export { handleRegister, handleLogin, handleLogout, handleVerify };
+
+// ─────────────────────────────────────────────────────────
+// @route   POST /api/auth/refresh
+// @desc  Generated new access token on basis of refresh token
+// @access  Private (requires auth middleware)
+// ─────────────────────────────────────────────────────────
+const handleRefresh = asyncHandler(async (req, res) => {
+
+  const refreshToken = req.cookies.refreshToken
+
+  let decoded
+  try {
+
+    decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET)
+  } catch (error) {
+
+    throw new ApiError(400, "Invalid Token")
+  }
+
+  const userInfo = await User.findById(decoded._id)
+  if (!userInfo) {
+    throw new ApiError(400, "Invalid Token")
+  }
+
+  if (userInfo.refreshToken !== refreshToken) {
+    throw new ApiError(400, "Invalid Token")
+  }
+
+  const accessToken = userInfo.generateAccessToken()
+  res
+    .cookie('accessToken', accessToken, {
+      ...cookieOptions,
+      maxAge: 1 * 24 * 60 * 60 * 1000,
+    })
+    .status(200)
+    .json(new ApiResponse(200, { user: { id: userInfo._id, email: userInfo.email, username: userInfo.userName, role: userInfo.role } }))
+})
+export { handleRegister, handleLogin, handleLogout, handleVerify, handleRefresh };

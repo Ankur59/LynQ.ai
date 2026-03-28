@@ -8,9 +8,9 @@ const useRefresh = () => {
   const refresh = async () => {
     try {
       dispatch(setloading(true));
-      const response = await api.post("/refresh");
+      const response = await api.post("/auth/refresh");
       dispatch(setUser(response.data.data.user));
-      dispatch(setRole(response.data.data.role));
+      dispatch(setRole(response.data.data.user.role));
       dispatch(setIsAutheticated(true));
     } catch (error) {
       if (error instanceof AxiosError) {

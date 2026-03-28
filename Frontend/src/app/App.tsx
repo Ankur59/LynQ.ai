@@ -7,13 +7,12 @@ import UnauthenticatedRoute from "../features/auth/components/login/Unauthentica
 function App() {
   return (
     <Routes>
+      <Route element={<UnauthenticatedRoute />}>
+        <Route path="/login" element={<Login />} />
+      </Route>
+
+      {/* Authenticated routes state from here */}
       <Route element={<PersitsLogin />}>
-        <Route element={<UnauthenticatedRoute />}>
-          <Route path="/login" element={<Login />} />
-        </Route>
-
-        {/* Authenticated routes state from here */}
-
         <Route element={<ProtectRoutes roles={["user"]} />}>
           <Route path="/chat" element={<div>this is user only route</div>} />
         </Route>

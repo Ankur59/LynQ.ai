@@ -18,7 +18,7 @@ export async function register({
   userName: string;
   full_name: string;
 }) {
-  const response = await api.post("/api/v1/auth/register", {
+  const response = await api.post("/auth/register", {
     email,
     userName,
     password,
@@ -34,7 +34,7 @@ export async function login({
   email: string;
   password: string;
 }) {
-  const response = await api.post("/api/v1/auth/login", {
+  const response = await api.post("/auth/login", {
     email,
     password,
   });
@@ -43,7 +43,7 @@ export async function login({
 }
 
 export async function verifyMail({ token }: { token: string }) {
-  const response = await api.post("/api/v1/auth/verify-token", {
+  const response = await api.post("auth/verify-token", {
     token,
   });
   return response.data;

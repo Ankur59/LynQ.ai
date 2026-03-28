@@ -4,6 +4,7 @@ import {
   handleLogin,
   handleLogout,
   handleVerify,
+  handleRefresh,
 } from "../controllers/auth.controller.js";
 import {
   registerValidator,
@@ -23,6 +24,8 @@ router.post("/login", loginValidator, validate, handleLogin);
 router.post("/verify-email", handleVerify)
 // routes.post("/verifyaccount",)
 // POST /api/auth/logout  (add verifyJWT middleware here later)
+
+router.post("/refresh", handleRefresh)
 router.post("/logout", handleLogout);
 
 export default router;
