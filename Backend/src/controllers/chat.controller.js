@@ -4,23 +4,32 @@ import { generateChatTitle, generateResponse } from "../services/ai.service.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 
 export const handleMessage = async (req, res) => {
-    const { message } = req.body
-    const title = await generateChatTitle(message)
-    const response = await generateResponse(message)
-    const chat = await chatModel.create({
-        userId: req.user._id,
-        title: title
-    })
-    const useMessage = await messageModel.create({
-        chatId: chat._id,
+    const { message, chatId } = req.body
+    let title
+    let chat
+    if (!chatId) {
+        title = await generateChatTitle(message)
+        chat = await chatModel.create({
+            userId: req.user._id,
+            title: title
+        })
+    }
+
+    const userMessage = await messageModel.create({
+        chatId: chatId ? chatId : chat._id,
         content: message,
-        role: "user"
+        role: "user",
     })
+
+    const pastMessages = await messageModel.find({ chatId: chatId }).sort({ createdAt: 1 })
+    console.log(pastMessages)
+
+    const response = await generateResponse(pastMessages)
     const aiResponse = await messageModel.create({
-        chatId: chat._id,
+        chatId: chatId ? chatId : chat._id,
         content: response,
         role: "ai"
     })
-    console.log("this is chat created", chat)
-    res.status(200).json(new ApiResponse(200, { title: title, response: response, chatId: chat._id }, "chat created successfully"))
+
+    res.status(200).json(new ApiResponse(200, { title: chatId ? "" : title, response: response, chatId: chatId ? chatId : chat._id }))
 }
