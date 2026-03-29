@@ -1,4 +1,9 @@
+import { generateChatTitle, generateResponse } from "../services/ai.service.js"
+
 export const handleMessage = async (req, res) => {
     const { message } = req.body
-    res.send(message)
+    const title = await generateChatTitle(message)
+    const response = await generateResponse(message)
+    console.log(title)
+    res.send(response)
 }
