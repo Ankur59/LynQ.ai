@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import useChat from "../hooks/useChat";
+import ChatLayout from "../components/layout/ChatLayout";
 
 const Dashboard = () => {
   const chat = useChat();
@@ -7,7 +8,8 @@ const Dashboard = () => {
   useEffect(() => {
     chat.initSocketConnection();
   }, []);
-  return <div>helowwww</div>;
+
+  return <ChatLayout />;
 };
 
 export default Dashboard;

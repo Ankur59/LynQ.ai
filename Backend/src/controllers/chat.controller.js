@@ -22,7 +22,6 @@ export const handleMessage = async (req, res) => {
     })
 
     const pastMessages = await messageModel.find({ chatId: chatId }).sort({ createdAt: 1 })
-    console.log(pastMessages)
 
     const response = await generateResponse(pastMessages)
     const aiResponse = await messageModel.create({

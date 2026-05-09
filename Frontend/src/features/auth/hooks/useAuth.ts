@@ -56,7 +56,7 @@ const useAuth = () => {
 
       dispatch(setUser(response.data.user));
       dispatch(setRole(response.data.user.role));
-      console.log("this is role", response.data.user.role);
+      // console.log("this is role", response.data.user.role);
       dispatch(setIsAutheticated(true));
 
       return true;
