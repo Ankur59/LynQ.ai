@@ -9,4 +9,6 @@ export const initSocketConnection = async () => {
   socket.on("connect", () => {
     console.log("Connected to socket server");
   });
+
+  return socket;
 };

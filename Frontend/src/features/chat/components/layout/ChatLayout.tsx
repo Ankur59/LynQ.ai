@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ChatMessage, ChatSession } from "../../types/chat.types";
 import Sidebar from "../sidebar/Sidebar";
 import ChatWindow from "../chat/ChatWindow";
+import { useParams } from "react-router-dom";
+import type { Socket } from "socket.io-client";
 
 // ── Mock data — replace with real socket/API data during integration ──
 const MOCK_SESSIONS: ChatSession[] = [
@@ -36,41 +38,28 @@ const MOCK_MESSAGES: ChatMessage[] = [
 ];
 // ─────────────────────────────────────────────────────────────────────
 
-const ChatLayout = () => {
+const ChatLayout = ({ socket }: { socket: Socket }) => {
+  const { id } = useParams();
   const [sessions, setSessions] = useState<ChatSession[]>(MOCK_SESSIONS);
-  const [activeSessionId, setActiveSessionId] = useState<string>(MOCK_SESSIONS[0].id);
+  const [activeSessionId, setActiveSessionId] = useState<string>(
+    MOCK_SESSIONS[0].id,
+  );
   const [messages, setMessages] = useState<ChatMessage[]>(MOCK_MESSAGES);
+  useEffect(() => {
+    // get all the chat of that chat if id is there
+  }, [id]);
 
   const handleSelectSession = (id: string) => {
-    setSessions((prev) =>
-      prev.map((s) => ({ ...s, active: s.id === id }))
-    );
+    setSessions((prev) => prev.map((s) => ({ ...s, active: s.id === id })));
     setActiveSessionId(id);
     // TODO: load messages for selected session from socket/API
   };
 
-  const handleNewChat = () => {
-    const newId = Date.now().toString();
-    const newSession: ChatSession = {
-      id: newId,
-      title: "New Chat",
-      active: true,
-    };
-    setSessions((prev) =>
-      [newSession, ...prev.map((s) => ({ ...s, active: false }))]
-    );
-    setActiveSessionId(newId);
-    setMessages([]);
-  };
+  const handleNewChat = () => {};
 
   const handleSend = (text: string) => {
-    const userMessage: ChatMessage = {
-      id: Date.now().toString(),
-      role: "user",
-      content: text,
-    };
-    setMessages((prev) => [...prev, userMessage]);
-    // TODO: emit to socket and push assistant response when received
+    console.log("mamamamma")
+    socket.emit("message", { chatId: id, message: text });
   };
 
   return (

@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useAuth from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import useChat from "../../../chat/hooks/useChat";
+import type { Socket } from "socket.io-client";
 
 const LoginCard = () => {
   const { handleLogin } = useAuth();
@@ -8,12 +10,31 @@ const LoginCard = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
 
+    const chat = useChat();
+
+    const [socket, setSocket] = useState<Socket | null>(null);
+
+    useEffect(() => {
+      const initializeSocket = async () => {
+        const socketInstance = await chat.initSocketConnection();
+
+        setSocket(socketInstance);
+      };
+
+      initializeSocket();
+
+      // optional cleanup
+      return () => {
+        socket?.disconnect();
+      };
+    }, []);
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // prevent page reload
     // console.log(email, password);
     const success: boolean = await handleLogin({ email, password });
     if (success) {
       navigate("/chat");
+
     }
   };
 
